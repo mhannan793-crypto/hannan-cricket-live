@@ -43,9 +43,49 @@ function scoreText(team){
   if (team && typeof team==="object") return team.score || team.name || "";
   return team || "";
 }
-function render(items){
- if(!Array.isArray(items)||!items.length){box.innerHTML='<div class="empty">এই মুহূর্তে কোনো ম্যাচের তথ্য পাওয়া যায়নি। পরে আবার দেখুন।</div>';return;}
- box.innerHTML=items.map(m=>{
+function render(items) {
+ if (!Array.isArray(items) || !items.length) {
+  box.innerHTML = '<div class="empty">কোনো ম্যাচ পাওয়া যায়নি।</div>';
+  return;
+ }
+
+ box.innerHTML = items.map(m => {
+  const teams = m.teams || [];
+  const scores = m.score || [];
+
+  function getScore(teamName) {
+   const found = scores.find(s =>
+    String(s.inning || "")
+     .toLowerCase()
+     .includes(String(teamName).toLowerCase())
+   );
+
+   if (!found) return "—";
+
+   return `${found.r}/${found.w} (${found.o} ov)`;
+  }
+
+  const status = m.status || "ম্যাচের আপডেট";
+
+  return `
+   <article class="card">
+    <div class="meta">
+     <span>${esc(m.matchType || "CRICKET")} · ${esc(m.name || "")}</span>
+     <span class="pill">MATCH</span>
+    </div>
+
+    ${teams.map(team => `
+     <div class="teamrow">
+      <div class="team">${esc(team)}</div>
+      <div class="score">${esc(getScore(team))}</div>
+     </div>
+    `).join("")}
+
+    <div class="result">${esc(status)}</div>
+   </article>
+  `;
+ }).join("");
+}
   const teams=Array.isArray(m.teams)?m.teams:[];
   const scores=Array.isArray(m.score)?m.score:[];
   const teamNames=teams.map(t=>typeof t==="string"?t:(t?.name||"দল"));
